@@ -88,10 +88,31 @@ Three distinct bumps. Each is warm, specific, and easy to act on. One per person
 >
 > Clicking opens a pre-filled email. Edit, hit send. That's it.
 
+**The suggestion engine — memory sparking, not data reporting**
+
+SPARK has no access to ticket systems, project data, or any external signals. And that's fine.
+The goal of a suggestion isn't to *tell* the sender what someone did — it's to **spark the memory
+they already have.** The right prompt makes someone think "oh yeah, actually she *did* help me
+with that." The AI's job is to ask the right question, not report a fact.
+
+SPARK only uses what it knows:
+- Entra ID: team roster, names, role/title (for role-appropriate prompts)
+- Its own kudos history: who's been recognized this month, who recognized *you* (reciprocity), past recognition themes
+
+**Suggestion format — questions and prompts, not statements:**
+Instead of: *"Ben closed 14 support tickets"* (requires external data, may be wrong)
+SPARK says: *"Is there someone who always shows up when you need them?"*
+Or more personal: *"Sarah recognized you last month. Has she done anything recently worth noting?"*
+Or role-targeted: *"As a lead, you probably see effort others miss. Who on your team quietly makes things better?"*
+
+The suggestions are situational memory triggers. Generic enough to work without data.
+Specific enough (name + question) to actually land.
+
 **AI logic for suggestions:**
 - Roster from Entra ID (their direct team)
 - Exclude people already recognized by them this month
 - Prioritize: people who recognized *them* recently (reciprocity logic, see 6b), and people in the team with zero kudos this month (equity logic)
+- Use role/title from Entra ID to pick prompts that fit their vantage point (IC vs. lead vs. manager)
 
 ---
 
@@ -126,12 +147,20 @@ Three distinct bumps. Each is warm, specific, and easy to act on. One per person
 >
 > [**✉ Recognize Ben →**]*
 
-**AI suggestion logic for managers:**
-- Pull their team's recent kudos data to find the "unrecognized" person(s)
-- Use any available signals (ticket data, project assignments, prior kudos context) to generate 2–3 concrete suggestion hooks
-- If there are multiple unrecognized members, flag only 1–2 at most per email to avoid overwhelming
+**AI suggestion logic for managers — same memory-sparking approach:**
+- Pull SPARK's own kudos history to identify who has zero kudos this month
+- Look at past kudos for that person (e.g., "last recognized in July for collaboration") to suggest a theme
+- Generate 2–3 question-style prompts based on their role/title, not external data:
+  - *"Does Ben handle things quietly that others might not notice?"*
+  - *"Has he helped someone on the team navigate something difficult recently?"*
+  - *"What's something he does consistently that you appreciate?"*
+- If there are multiple unrecognized members, flag only 1–2 at most per email — don't overwhelm
 
-**Why this matters:** Recognition equity is invisible until you measure it. Some people are great at their job but aren't visible to the people who CC spark@. This bump makes the manager the equalizer without making it mandatory or mechanical.
+**Why this matters — the morale problem:** In a 30–40 person department, low recognition morale
+means people feel invisible. Not because nobody cares, but because recognition gravitates toward
+the most visible work. Quiet contributors carry the team and hear nothing.
+The manager bump makes the manager the equity mechanism: they have the visibility to fill the gap,
+they just need the prompt. This feature is the department's morale safety net.
 
 **Guardrails:**
 - Only fires if the team has ≥ 3 members (trivial for a 2-person team)
@@ -243,11 +272,26 @@ before anyone else tries it.
 
 ---
 
+## Answered questions
+
+**Q6 — External data for suggestions:** Resolved. SPARK uses only its own kudos history and
+Entra ID roster/roles. Suggestions are memory-sparking prompts (questions), not data facts.
+No ServiceNow, no ticket systems, no project data. Zero external dependencies. ✅
+
+**Q7 — Surface unrecognized employees to manager:** Confirmed yes. Managers are the equity
+mechanism. The department has a morale problem rooted in people feeling unseen — this bump
+is the fix. Manager bump is private and framed as a caring prompt, not a report card. ✅
+
+**Department size:** ~30–40 people. Implications:
+- Small enough that the monthly Spotlight will name most of the department — that's a feature, not a problem
+- Small enough that "nobody left behind" is achievable (1–2 unrecognized people is very noticeable)
+- Team leaderboard stays at team level (avoid individual comparison in a small group)
+- Bump cadence: once per month per person is right — at 30–40 people, more frequent bumps will feel spammy fast
+- Individual manager trees likely have 5–10 direct reports; the equity bump is meaningful at that scale
+
 ## Open questions
-1. Department size, and is it cleanly defined in Entra ID (one DL or one manager tree)?
+1. Is the department cleanly defined in Entra ID? (one manager tree, or multiple managers under a director — affects how we scope the Spotlight and Hub)
 2. Is manager acknowledgment a formal HR requirement (award program, audit trail)?
-3. Do points connect to real rewards budget? If yes, we need a point model. If no, cut forever.
-4. Which AI service is approved for processing employee email content (Azure OpenAI, Copilot Studio, AI Builder)?
-5. Can we register Outlook Actionable Messages in this tenant?
-6. What signals beyond kudos data do we have for the bump suggestions? (e.g., ticket system, project assignments)
-7. Privacy: Is it OK to surface "Ben hasn't been recognized this month" to Ben's manager?
+3. Do points connect to a real rewards budget? If yes, we need a model. If no, cut permanently.
+4. Which AI service is approved for processing employee email content? (Azure OpenAI, Copilot Studio, AI Builder)
+5. Can we register Outlook Actionable Messages in this M365 tenant?
