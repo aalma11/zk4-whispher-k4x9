@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPARK — POC Architecture</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      min-height: 100vh;
+      padding: 40px 24px;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .header .badge {
+      display: inline-block;
+      background: #ff9f0a;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+    .header h1 {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #1d1d1f;
+    }
+    .header h1 span { color: #ff9f0a; }
+    .header p {
+      margin-top: 8px;
+      font-size: 16px;
+      color: #6e6e73;
+    }
+
+    /* Section labels */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6e6e73;
+      margin-bottom: 16px;
+      padding-left: 4px;
+    }
+
+    /* Flow container */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 48px;
+    }
+
+    /* Individual step */
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .step-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .step-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-connector {
+      width: 2px;
+      flex: 1;
+      min-height: 24px;
+      background: linear-gradient(to bottom, #d2d2d7, #d2d2d7);
+      margin: 4px 0;
+    }
+
+    .step:last-child .step-connector { display: none; }
+
+    .step-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+    }
+
+    .step-card .tool-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .step-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1d1d1f;
+      margin-bottom: 4px;
+    }
+
+    .step-card p {
+      font-size: 14px;
+      color: #6e6e73;
+      line-height: 1.5;
+    }
+
+    .step-card .poc-note {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #ff9f0a;
+      background: #fff7e6;
+      border-radius: 8px;
+      padding: 6px 10px;
+    }
+
+    /* Colors per step */
+    .c-email   { background: #e8f4fd; }
+    .c-automate{ background: #e6f0ff; }
+    .c-ai      { background: #f0e8fd; }
+    .c-lookup  { background: #e8f4fd; }
+    .c-db      { background: #e8fdf0; }
+    .c-out     { background: #fff3e8; }
+
+    .t-email   { background: #cce8f8; color: #0071c5; }
+    .t-automate{ background: #cce0ff; color: #0047b3; }
+    .t-ai      { background: #e8ccff; color: #6600cc; }
+    .t-lookup  { background: #cce8f8; color: #0071c5; }
+    .t-db      { background: #ccf5dc; color: #007a33; }
+    .t-out     { background: #ffe5cc; color: #b34700; }
+
+    /* Outbound section */
+    .outbound {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .out-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+    }
+
+    .out-card .out-icon { font-size: 28px; margin-bottom: 10px; }
+    .out-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .out-card p { font-size: 13px; color: #6e6e73; line-height: 1.5; }
+    .out-card .out-tag {
+      display: inline-block;
+      font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 6px;
+      margin-top: 10px;
+      background: #e8fdf0; color: #007a33;
+    }
+
+    /* Prereqs checklist */
+    .prereqs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .prereq-col {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+    }
+    .prereq-col h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #1d1d1f; }
+    .prereq-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: #3a3a3c;
+      line-height: 1.4;
+    }
+    .prereq-item .check {
+      width: 18px; height: 18px;
+      border-radius: 5px;
+      border: 2px solid #d2d2d7;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Timeline */
+    .timeline {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+      margin-bottom: 48px;
+    }
+    .timeline h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+    .tl-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+    .tl-time {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ff9f0a;
+      width: 60px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+    .tl-bar-wrap { flex: 1; background: #f5f5f7; border-radius: 6px; height: 28px; }
+    .tl-bar {
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #ff9f0a, #ff6b00);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .tl-total {
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1d1d1f;
+      text-align: right;
+    }
+
+    /* Demo script */
+    .demo {
+      background: #1d1d1f;
+      border-radius: 16px;
+      padding: 24px;
+      color: #f5f5f7;
+      margin-bottom: 48px;
+    }
+    .demo h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: #f5f5f7; }
+    .demo-step {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+    .demo-num {
+      width: 24px; height: 24px;
+      background: #ff9f0a;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .demo-text { font-size: 13px; color: #aeaeb2; line-height: 1.5; padding-top: 3px; }
+    .demo-text strong { color: #f5f5f7; }
+
+    @media (max-width: 600px) {
+      .outbound, .prereqs { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">POC Architecture</div>
+    <h1>S.P.A.R.K. <span>✦</span></h1>
+    <p>Spreading Positivity and Appreciation through Recognition and Kudos</p>
+    <p style="margin-top:6px; font-size:13px; color:#aaa;">Email in → AI extracts → Kudos Card out. Buildable in a day.</p>
+  </div>
+
+  <!-- Inbound flow -->
+  <div class="section-label">① Inbound — email becomes a kudos</div>
+  <div class="flow">
+
+    <div class="step">
+      <div class="step-left">
+        <div class="step-icon c-email">📧</div>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-card">
+        <div class="tool-tag t-email">Shared Mailbox</div>
+        <h3>spark@company.com receives the email</h3>
+        <p>Someone writes a thank-you and CCs spark@. Or forwards a customer email. Nothing else changes for the sender.</p>
+        <div class="poc-note">⚡ POC: IT creates this mailbox. 30 minutes. No special config.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left">
+        <div class="step-icon c-automate">⚡</div>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-card">
+        <div class="tool-tag t-automate">Power Automate</div>
+        <h3>Flow triggers instantly</h3>
+        <p>"When a new email arrives in a shared mailbox" — a native connector. Captures sender, recipients, body, timestamp. No code.</p>
+        <div class="poc-note">⚡ POC: Standard trigger, fires within seconds. Free with most M365 plans.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left">
+        <div class="step-icon c-ai">🤖</div>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-card">
+        <div class="tool-tag t-ai">Azure OpenAI</div>
+        <h3>AI reads and extracts structured data</h3>
+        <p>A single prompt asks the AI to return JSON: who was recognized, who sent it, what happened in one sentence, which core value it shows, and confidence level.</p>
+        <div class="poc-note">⚡ POC shortcut: No Azure OpenAI yet? Use AI Builder (M365 native) or hardcode extraction for the demo email. Prove the plumbing first.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left">
+        <div class="step-icon c-lookup">🔍</div>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-card">
+        <div class="tool-tag t-lookup">Office 365 Users</div>
+        <h3>Look up the recipient and their manager</h3>
+        <p>Power Automate's built-in connector resolves the recipient's full name, team/department, and manager email from your existing M365 directory. No new data to maintain.</p>
+        <div class="poc-note">⚡ POC shortcut: Hardcode recipient + manager for the demo. Add lookup in hour 2.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left">
+        <div class="step-icon c-db">🗄️</div>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-card">
+        <div class="tool-tag t-db">SharePoint List</div>
+        <h3>One row written to SPARK_Kudos</h3>
+        <p>Every field saved: who, what, value, team, source, timestamp, confidence. This list is the database. The Hub reads from it. Bumps query it. The Spotlight is generated from it.</p>
+        <div class="poc-note">⚡ POC: Create the list in 20 min. SharePoint is already in your M365 tenant.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-left">
+        <div class="step-icon c-out">📤</div>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-card">
+        <div class="tool-tag t-out">Outlook / Power Automate</div>
+        <h3>Emails sent — Kudos Card + manager notification</h3>
+        <p>Two emails sent automatically. Kudos Card goes to the recipient. Manager notification with a one-click 👏 button goes to their manager. HTML is inline — no external hosting needed.</p>
+        <div class="poc-note">⚡ POC: mailto: link for the 👏 button (opens pre-filled email). Production upgrade: Outlook Adaptive Cards (requires admin registration).</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Outbound emails -->
+  <div class="section-label">② Outbound — two emails, two purposes</div>
+  <div class="outbound">
+    <div class="out-card">
+      <div class="out-icon">🌟</div>
+      <h3>Kudos Card → recipient</h3>
+      <p>The magic moment. A clean, designed email with the quote, who sent it, the core value it shows. Nothing else. This email <em>is</em> the product.</p>
+      <div class="out-tag">✓ Delivers in &lt; 60 seconds</div>
+    </div>
+    <div class="out-card">
+      <div class="out-icon">👏</div>
+      <h3>Manager notification → their manager</h3>
+      <p>Short summary of the kudos + one button: "Add my thanks." Clicking opens a pre-filled email to spark@. Manager hits Send. Done. No portal to log into.</p>
+      <div class="out-tag">✓ Optional — turns gate into amplifier</div>
+    </div>
+  </div>
+
+  <!-- Prerequisites -->
+  <div class="section-label">③ What you need before you start</div>
+  <div class="prereqs">
+    <div class="prereq-col">
+      <h3>🏢 From IT — request first (long pole)</h3>
+      <div class="prereq-item"><div class="check"></div>Shared mailbox spark@company.com created</div>
+      <div class="prereq-item"><div class="check"></div>Permission to run Power Automate flow using that mailbox</div>
+      <div class="prereq-item"><div class="check"></div>Azure OpenAI endpoint + API key provisioned (or confirm AI Builder available)</div>
+    </div>
+    <div class="prereq-col">
+      <h3>🛠 You do yourself — minutes each</h3>
+      <div class="prereq-item"><div class="check"></div>Log in to make.powerautomate.com</div>
+      <div class="prereq-item"><div class="check"></div>Create SPARK_Kudos SharePoint List with columns</div>
+      <div class="prereq-item"><div class="check"></div>Write the HTML Kudos Card email template</div>
+      <div class="prereq-item"><div class="check"></div>Prepare one test thank-you email for the demo</div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="section-label">④ Build timeline — focused single day</div>
+  <div class="timeline">
+    <div class="tl-row">
+      <div class="tl-time">20 min</div>
+      <div class="tl-bar-wrap"><div class="tl-bar" style="width:8%">SharePoint List</div></div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-time">2–3 hrs</div>
+      <div class="tl-bar-wrap"><div class="tl-bar" style="width:55%">Flow 1: inbound trigger → AI → lookup → SharePoint → emails</div></div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-time">30 min</div>
+      <div class="tl-bar-wrap"><div class="tl-bar" style="width:14%">Flow 2: manager +1 handler</div></div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-time">1 hr</div>
+      <div class="tl-bar-wrap"><div class="tl-bar" style="width:26%">Kudos Card HTML email design</div></div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-time">1 hr</div>
+      <div class="tl-bar-wrap"><div class="tl-bar" style="width:26%">End-to-end testing + fixes</div></div>
+    </div>
+    <div class="tl-total">Total: ~5–6 hours (prereqs already in place)</div>
+  </div>
+
+  <!-- Demo script -->
+  <div class="demo">
+    <h3>🎬 The demo script — show your director this live</h3>
+    <div class="demo-step">
+      <div class="demo-num">1</div>
+      <div class="demo-text">Open your email client. <strong>Write a real thank-you</strong> to a real colleague.</div>
+    </div>
+    <div class="demo-step">
+      <div class="demo-num">2</div>
+      <div class="demo-text">Add <strong>spark@company.com</strong> to the CC line. Hit Send.</div>
+    </div>
+    <div class="demo-step">
+      <div class="demo-num">3</div>
+      <div class="demo-text">Wait ~30 seconds. <strong>The colleague gets a Kudos Card</strong> in their inbox. Open it.</div>
+    </div>
+    <div class="demo-step">
+      <div class="demo-num">4</div>
+      <div class="demo-text">Open the SharePoint List. <strong>One new row — all fields populated by AI.</strong> No one typed any of that.</div>
+    </div>
+    <div class="demo-step">
+      <div class="demo-num">5</div>
+      <div class="demo-text">Check the manager's inbox. <strong>Notification email, one 👏 button.</strong></div>
+    </div>
+    <div class="demo-step">
+      <div class="demo-num">6</div>
+      <div class="demo-text">Click the button. Manager's email opens pre-filled. Hit Send. <strong>SharePoint row updates</strong> — Manager_PlusOne = true. Live.</div>
+    </div>
+    <div style="margin-top:16px; padding-top:16px; border-top:1px solid #3a3a3c; font-size:12px; color:#6e6e73;">
+      No mocks. No slides. Real email → real AI → real database → real notification. In under 90 seconds.
+    </div>
+  </div>
+
+  <div style="text-align:center; color:#aaa; font-size:12px; padding-bottom:40px;">
+    SPARK MVP · POC Architecture v1
+  </div>
+
+</div>
+</body>
+</html>
