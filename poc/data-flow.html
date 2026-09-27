@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPARK — How Power Automate talks to Claude</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    padding: 40px 24px;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #6e6e73; margin-bottom: 36px; }
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #6e6e73; margin-bottom: 10px; margin-top: 28px;
+  }
+
+  /* STAGE CARD */
+  .stage {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e5ea;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .stage-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f2f2f7;
+  }
+  .stage-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: white; flex-shrink: 0;
+  }
+  .stage-info .title { font-size: 16px; font-weight: 700; }
+  .stage-info .sub { font-size: 12px; color: #6e6e73; margin-top: 2px; }
+  .stage-body { padding: 18px 24px; }
+
+  /* COLORS */
+  .c-blue   { background: #007aff; }
+  .c-purple { background: #5e5ce6; }
+  .c-orange { background: #ff9500; }
+  .c-green  { background: #30d158; }
+  .c-red    { background: #ff3b30; }
+
+  /* ARROW */
+  .arrow {
+    text-align: center;
+    font-size: 20px; color: #c7c7cc;
+    margin: 4px 0;
+    line-height: 1;
+  }
+
+  /* CODE BLOCKS */
+  .code-wrap { margin: 10px 0; }
+  .code-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: #6e6e73; margin-bottom: 5px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .code-label .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  pre {
+    background: #1c1c1e;
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: #f5f5f7;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .k { color: #5e9eff; }   /* key */
+  .s { color: #30d158; }   /* string value */
+  .n { color: #ff9f0a; }   /* number/bool */
+  .c { color: #636366; }   /* comment */
+  .hi { background: rgba(255,200,0,0.15); border-radius: 3px; padding: 0 2px; }  /* highlight */
+
+  /* ANNOTATION */
+  .note {
+    background: #f9f9fb; border-left: 3px solid;
+    border-radius: 0 8px 8px 0; padding: 11px 15px;
+    font-size: 13px; line-height: 1.55; margin: 10px 0; color: #3a3a3c;
+  }
+  .note.blue   { border-color: #007aff; background: #f0f6ff; color: #1a3a6a; }
+  .note.purple { border-color: #5e5ce6; background: #f4f3ff; color: #2a2870; }
+  .note.orange { border-color: #ff9500; background: #fff8f0; color: #6b3a00; }
+  .note.green  { border-color: #30d158; background: #f0faf4; color: #1a4a2a; }
+  .note.red    { border-color: #ff3b30; background: #fff0ef; color: #6b1a18; }
+
+  /* INLINE PILL */
+  .pill {
+    display: inline-block;
+    border-radius: 6px; padding: 1px 8px;
+    font-size: 12px; font-weight: 600; font-family: 'SF Mono', monospace;
+  }
+  .pill.blue   { background: #e8f1ff; color: #007aff; }
+  .pill.purple { background: #eeecff; color: #5e5ce6; }
+  .pill.orange { background: #fff3e0; color: #bf6000; }
+  .pill.green  { background: #d1f4e0; color: #1c7a3a; }
+
+  /* SPLIT */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; }
+
+  /* WARNING */
+  .warn {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: #fff8f0; border: 1px solid #ffd8a8; border-radius: 10px;
+    padding: 14px 16px; margin: 10px 0;
+  }
+  .warn-icon { font-size: 18px; flex-shrink: 0; }
+  .warn-text { font-size: 13px; color: #6b3a00; line-height: 1.5; }
+  .warn-text strong { color: #4a2800; }
+
+  /* MAPPING TABLE */
+  .map-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  .map-table th {
+    background: #f2f2f7; padding: 8px 12px; text-align: left;
+    font-weight: 600; color: #6e6e73; font-size: 11px;
+    text-transform: uppercase; border-bottom: 1px solid #e5e5ea;
+  }
+  .map-table td { padding: 9px 12px; border-bottom: 1px solid #f2f2f7; vertical-align: top; }
+  .map-table tr:last-child td { border-bottom: none; }
+  .arrow-cell { color: #c7c7cc; font-size: 16px; text-align: center; }
+
+  /* GOTCHA BOX */
+  .gotcha {
+    background: #fff0ef; border: 1px solid #ffb3b0; border-radius: 12px;
+    padding: 18px 20px; margin-bottom: 20px;
+  }
+  .gotcha h3 { font-size: 14px; font-weight: 700; color: #6b1a18; margin-bottom: 10px; display: flex; gap: 6px; align-items: center; }
+  .gotcha p  { font-size: 13px; color: #4a1210; line-height: 1.6; }
+
+  @media (max-width: 600px) { .split { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>How Power Automate talks to Claude</h1>
+<p class="subtitle">The actual data at every step — what gets sent, what comes back, and how it lands in SharePoint.</p>
+
+<!-- ===================== STEP 1 ===================== -->
+<p class="section-label">Step 1 — Power Automate sends the email to Claude</p>
+<div class="stage">
+  <div class="stage-header">
+    <div class="stage-num c-blue">1</div>
+    <div class="stage-info">
+      <div class="title">HTTP action: POST to Claude API</div>
+      <div class="sub">Power Automate → api.anthropic.com/v1/messages</div>
+    </div>
+  </div>
+  <div class="stage-body">
+
+    <div class="code-wrap">
+      <div class="code-label"><div class="dot" style="background:#007aff"></div>What Power Automate sends (the HTTP request body)</div>
+<pre>{
+  <span class="k">"model"</span>: <span class="s">"claude-haiku-4-5-20251001"</span>,
+  <span class="k">"max_tokens"</span>: <span class="n">500</span>,
+  <span class="k">"system"</span>: <span class="s">"You are SPARK, a recognition intelligence assistant.
+    Extract recognition details from employee emails.
+    Always return valid JSON only. No preamble."</span>,
+  <span class="k">"messages"</span>: [
+    {
+      <span class="k">"role"</span>: <span class="s">"user"</span>,
+      <span class="k">"content"</span>: <span class="s"><span class="hi">"Sender: James Reyes &lt;james.reyes@company.com&gt;
+Subject: SPARK: Thank you Maria!
+Body: Hi team, I just wanted to call out Maria Santos
+from HCM Engineering. She stayed late last night to fix
+the benefits system outage before it impacted employees.
+Total customer-first mindset. Great job Maria!"</span></span>
+    }
+  ]
+}</pre>
+    </div>
+
+    <div class="note blue">
+      The <span class="pill blue">content</span> field is built dynamically using Power Automate's dynamic content picker.
+      You click the field, select <strong>From</strong>, <strong>Subject</strong>, and <strong>Body</strong>
+      from the email trigger — Power Automate inserts the actual values at runtime.
+      No coding needed.
+    </div>
+
+    <div class="note blue" style="margin-top:8px;">
+      <strong>API key:</strong> goes in the HTTP action's Headers section — not in the body.
+      For the POC: paste it directly. For production: store in a
+      Power Automate Environment Variable so it's not visible in the flow.
+    </div>
+
+  </div>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ===================== STEP 2 ===================== -->
+<p class="section-label">Step 2 — Claude processes and responds</p>
+<div class="stage">
+  <div class="stage-header">
+    <div class="stage-num c-purple">2</div>
+    <div class="stage-info">
+      <div class="title">Claude's raw API response</div>
+      <div class="sub">This is what comes back into Power Automate's HTTP action body</div>
+    </div>
+  </div>
+  <div class="stage-body">
+
+    <div class="code-wrap">
+      <div class="code-label"><div class="dot" style="background:#5e5ce6"></div>Claude's full response (Power Automate sees this as body('HTTP'))</div>
+<pre>{
+  <span class="k">"id"</span>: <span class="s">"msg_01XFDUDYJgAACzvnptvVoYEL"</span>,
+  <span class="k">"type"</span>: <span class="s">"message"</span>,
+  <span class="k">"role"</span>: <span class="s">"assistant"</span>,
+  <span class="k">"content"</span>: [
+    {
+      <span class="k">"type"</span>: <span class="s">"text"</span>,
+      <span class="k">"text"</span>: <span class="hi"><span class="s">"{\"recipient_name\":\"Maria Santos\",\"sender_name\":\"James Reyes\",\"source_type\":\"peer\",\"what_happened\":\"Maria stayed late to resolve a benefits system outage before it could impact employees.\",\"core_value\":\"Customer-driven\",\"sentiment\":\"positive\",\"is_recognition\":true,\"needs_clarification\":false}"</span></span>
+    }
+  ],
+  <span class="k">"model"</span>: <span class="s">"claude-haiku-4-5-20251001"</span>,
+  <span class="k">"stop_reason"</span>: <span class="s">"end_turn"</span>,
+  <span class="k">"usage"</span>: { <span class="k">"input_tokens"</span>: <span class="n">312</span>, <span class="k">"output_tokens"</span>: <span class="n">89</span> }
+}</pre>
+    </div>
+
+    <div class="gotcha">
+      <h3>⚠️ The one thing that trips everyone up</h3>
+      <p>The JSON you care about is <strong>buried inside a string</strong>.
+      Look at <code>content[0].text</code> — it's a <em>string</em> that contains JSON,
+      not a JSON object. The backslashes (<code>\"</code>) are escaped quotes inside a string.<br><br>
+      Power Automate can't use <code>recipient_name</code> yet — it doesn't know it exists.
+      You need one more step: <strong>Parse JSON</strong>. That's what cracks it open.</p>
+    </div>
+
+    <div class="note purple">
+      To get to the text string in Power Automate expressions:<br>
+      <code>body('HTTP_-_Call_Claude')?['content'][0]['text']</code><br><br>
+      That's the input to your Parse JSON step.
+    </div>
+
+  </div>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ===================== STEP 3 ===================== -->
+<p class="section-label">Step 3 — Parse JSON cracks it open</p>
+<div class="stage">
+  <div class="stage-header">
+    <div class="stage-num c-purple">3</div>
+    <div class="stage-info">
+      <div class="title">Parse JSON action</div>
+      <div class="sub">Power Automate built-in — Data Operations → Parse JSON</div>
+    </div>
+  </div>
+  <div class="stage-body">
+
+    <div class="split">
+      <div>
+        <div class="code-label"><div class="dot" style="background:#5e5ce6"></div>Input (the text string from Claude)</div>
+<pre style="font-size:11.5px"><span class="s">"{\"recipient_name\":\"Maria Santos\",
+\"sender_name\":\"James Reyes\",
+\"source_type\":\"peer\",
+\"what_happened\":\"Maria stayed late...\",
+\"core_value\":\"Customer-driven\",
+\"sentiment\":\"positive\",
+\"is_recognition\":true,
+\"needs_clarification\":false}"</span></pre>
+      </div>
+      <div>
+        <div class="code-label"><div class="dot" style="background:#30d158"></div>After Parse JSON — named fields you can click</div>
+<pre style="font-size:11.5px">{
+  <span class="k">recipient_name</span>  → <span class="s">"Maria Santos"</span>
+  <span class="k">sender_name</span>     → <span class="s">"James Reyes"</span>
+  <span class="k">source_type</span>     → <span class="s">"peer"</span>
+  <span class="k">what_happened</span>   → <span class="s">"Maria stayed..."</span>
+  <span class="k">core_value</span>      → <span class="s">"Customer-driven"</span>
+  <span class="k">sentiment</span>       → <span class="s">"positive"</span>
+  <span class="k">is_recognition</span>  → <span class="n">true</span>
+  <span class="k">needs_clarification</span> → <span class="n">false</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="note purple">
+      In the Parse JSON action, paste this as the Schema — Power Automate uses it to
+      know what fields exist so they appear in the dynamic content picker later:
+    </div>
+
+    <div class="code-wrap" style="margin-top:8px;">
+<pre>{
+  <span class="k">"type"</span>: <span class="s">"object"</span>,
+  <span class="k">"properties"</span>: {
+    <span class="k">"recipient_name"</span>:      { <span class="k">"type"</span>: <span class="s">"string"</span> },
+    <span class="k">"sender_name"</span>:         { <span class="k">"type"</span>: <span class="s">"string"</span> },
+    <span class="k">"source_type"</span>:         { <span class="k">"type"</span>: <span class="s">"string"</span> },
+    <span class="k">"what_happened"</span>:       { <span class="k">"type"</span>: <span class="s">"string"</span> },
+    <span class="k">"core_value"</span>:          { <span class="k">"type"</span>: <span class="s">"string"</span> },
+    <span class="k">"sentiment"</span>:           { <span class="k">"type"</span>: <span class="s">"string"</span> },
+    <span class="k">"is_recognition"</span>:      { <span class="k">"type"</span>: <span class="s">"boolean"</span> },
+    <span class="k">"needs_clarification"</span>: { <span class="k">"type"</span>: <span class="s">"boolean"</span> }
+  }
+}</pre>
+    </div>
+
+    <div class="note green" style="margin-top:8px;">
+      After this step, every field shows up in Power Automate's <strong>dynamic content picker</strong>
+      — the blue pill menu where you click to insert values into other steps.
+      No expressions needed. Just click <strong>recipient_name</strong>, <strong>what_happened</strong>, etc.
+    </div>
+
+  </div>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ===================== STEP 4 ===================== -->
+<p class="section-label">Step 4 — SharePoint gets the row</p>
+<div class="stage">
+  <div class="stage-header">
+    <div class="stage-num c-green">4</div>
+    <div class="stage-info">
+      <div class="title">Create item in SharePoint List</div>
+      <div class="sub">SharePoint connector → Create item — fully native, no config</div>
+    </div>
+  </div>
+  <div class="stage-body">
+
+    <table class="map-table">
+      <tr>
+        <th>SharePoint column</th>
+        <th></th>
+        <th>Where the value comes from</th>
+        <th>Example</th>
+      </tr>
+      <tr>
+        <td><strong>Title</strong> (required by SP)</td>
+        <td class="arrow-cell">←</td>
+        <td><span class="pill purple">recipient_name</span> from Parse JSON</td>
+        <td>Maria Santos</td>
+      </tr>
+      <tr>
+        <td><strong>Sender</strong></td>
+        <td class="arrow-cell">←</td>
+        <td><span class="pill purple">sender_name</span> from Parse JSON</td>
+        <td>James Reyes</td>
+      </tr>
+      <tr>
+        <td><strong>Source Type</strong></td>
+        <td class="arrow-cell">←</td>
+        <td><span class="pill purple">source_type</span> from Parse JSON</td>
+        <td>peer</td>
+      </tr>
+      <tr>
+        <td><strong>What Happened</strong></td>
+        <td class="arrow-cell">←</td>
+        <td><span class="pill purple">what_happened</span> from Parse JSON</td>
+        <td>Maria stayed late to resolve…</td>
+      </tr>
+      <tr>
+        <td><strong>Core Value</strong></td>
+        <td class="arrow-cell">←</td>
+        <td><span class="pill purple">core_value</span> from Parse JSON</td>
+        <td>Customer-driven</td>
+      </tr>
+      <tr>
+        <td><strong>Team</strong></td>
+        <td class="arrow-cell">←</td>
+        <td><span class="pill orange">Team</span> from Roster List lookup</td>
+        <td>HCM Engineering</td>
+      </tr>
+      <tr>
+        <td><strong>Manager Email</strong></td>
+        <td class="arrow-cell">←</td>
+        <td><span class="pill orange">Manager Email</span> from Roster List lookup</td>
+        <td>diana.cruz@co.com</td>
+      </tr>
+      <tr>
+        <td><strong>Date</strong></td>
+        <td class="arrow-cell">←</td>
+        <td><span class="pill blue">Received Time</span> from email trigger</td>
+        <td>2026-09-27</td>
+      </tr>
+    </table>
+
+    <div class="note green" style="margin-top:12px;">
+      That's it. Once you configure this action — site URL, list name, and field mapping —
+      every kudos email creates one new row automatically. No code. No database driver.
+      No connection string. SharePoint is native to Power Automate.
+    </div>
+
+  </div>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ===================== STEP 5 ===================== -->
+<p class="section-label">Step 5 — Emails go out</p>
+<div class="stage">
+  <div class="stage-header">
+    <div class="stage-num c-orange">5</div>
+    <div class="stage-info">
+      <div class="title">Send email (V2) — twice</div>
+      <div class="sub">Office 365 Outlook connector — same dynamic content fields</div>
+    </div>
+  </div>
+  <div class="stage-body">
+
+    <div class="split">
+      <div>
+        <div class="code-label"><div class="dot" style="background:#5e5ce6"></div>Kudos Card → recipient</div>
+<pre style="font-size:11.5px">To:      <span class="hi">recipient_email</span> (Roster lookup)
+Subject: ✦ You were recognized, <span class="hi">recipient_name</span>!
+Body:    [HTML template]
+         with <span class="hi">what_happened</span>,
+         <span class="hi">sender_name</span>,
+         <span class="hi">core_value</span>
+         injected as variables</pre>
+      </div>
+      <div>
+        <div class="code-label"><div class="dot" style="background:#ff9500"></div>Notification → manager</div>
+<pre style="font-size:11.5px">To:      <span class="hi">manager_email</span> (Roster lookup)
+Subject: SPARK: <span class="hi">recipient_name</span> was recognized
+Body:    Plain text + mailto: button
+         pre-filled to recognize
+         <span class="hi">recipient_name</span> back</pre>
+      </div>
+    </div>
+
+    <div class="note orange">
+      The HTML Kudos Card body: in the Send Email action, click the
+      <strong>Code View</strong> toggle (the <code>&lt;/&gt;</code> button in the body field)
+      to paste raw HTML. Power Automate will substitute the dynamic content
+      placeholders when it sends. The recipient sees a fully rendered HTML email.
+    </div>
+
+  </div>
+</div>
+
+<!-- FULL FLOW SUMMARY -->
+<p class="section-label" style="margin-top:28px;">The full picture in one view</p>
+<div class="stage">
+  <div class="stage-body">
+<pre style="font-size:12px; background:#1c1c1e; border-radius:10px; padding:20px;">
+<span class="c">┌─────────────────────────────────────────────────────────────────┐</span>
+<span class="c">│                    POWER AUTOMATE FLOW                          │</span>
+<span class="c">└─────────────────────────────────────────────────────────────────┘</span>
+
+  [<span class="k">Trigger</span>]  Email arrives in SPARK Inbox folder
+      │
+      ▼
+  [<span class="k">Condition</span>] Is sender = my own email? → Yes → Terminate (prevent loop)
+      │ No
+      ▼
+  [<span class="k">Get items</span>] SharePoint → SPARK Roster → filter by recipient email
+      │  Returns: team, manager name, manager email
+      ▼
+  [<span class="k">HTTP</span>]      POST api.anthropic.com/v1/messages
+      │  Sends:  email from + subject + body
+      │  Gets:   raw Claude response JSON
+      ▼
+  [<span class="k">Parse JSON</span>] Input: body('HTTP')?['content'][0]['text']
+      │  Unlocks: recipient_name, what_happened, core_value, etc.
+      ▼
+  [<span class="k">Condition</span>] needs_clarification = true?
+      │  → Yes → Send "who did you mean?" email to sender → Terminate
+      │  → No  → continue
+      ▼
+  [<span class="k">Create item</span>] SharePoint → SPARK Recognition list → new row
+      ▼
+  [<span class="k">Send email</span>] Kudos Card → recipient (HTML template + dynamic values)
+      ▼
+  [<span class="k">Send email</span>] Manager notification → manager (plain text + mailto: button)
+
+<span class="c">─────────────────────────────────────────────────────────────────</span>
+<span class="c"> Total Power Automate actions: 8.  No code written.             </span>
+<span class="c"> One HTTP action is the only thing touching an external API.    </span>
+<span class="c">─────────────────────────────────────────────────────────────────</span></pre>
+  </div>
+</div>
+
+<!-- GOTCHA SUMMARY -->
+<div class="warn" style="margin-top:4px;">
+  <div class="warn-icon">📌</div>
+  <div class="warn-text">
+    <strong>The one thing to remember:</strong> Claude's answer lives inside
+    <code>content[0].text</code> as a JSON string — not a ready-made object.
+    The <strong>Parse JSON</strong> step is what turns that string into clickable fields.
+    Skip it and you're stuck writing raw expressions. Add it and everything becomes point-and-click.
+  </div>
+</div>
+
+</div>
+</body>
+</html>
