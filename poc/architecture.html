@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPARK POC Architecture</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    padding: 40px 24px;
+    min-height: 100vh;
+  }
+  .page { max-width: 900px; margin: 0 auto; }
+
+  h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .subtitle { font-size: 15px; color: #6e6e73; margin-bottom: 40px; }
+
+  /* === COMPARE STRIP === */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .compare-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px 24px;
+    border: 1px solid #e5e5ea;
+  }
+  .compare-card.poc { border-top: 3px solid #30d158; }
+  .compare-card.prod { border-top: 3px solid #007aff; }
+  .compare-card h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+  .compare-card.poc h3 { color: #30d158; }
+  .compare-card.prod h3 { color: #007aff; }
+  .compare-card ul { list-style: none; }
+  .compare-card li { font-size: 14px; color: #3a3a3c; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
+  .compare-card li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .compare-card.poc li::before { background: #30d158; }
+  .compare-card.prod li::before { background: #007aff; }
+
+  /* === STACK === */
+  .stack-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 40px;
+  }
+  .stack-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #e5e5ea;
+    text-align: center;
+  }
+  .stack-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .stack-card .tool { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .stack-card .role { font-size: 12px; color: #6e6e73; }
+  .stack-card .badge {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 11px;
+    background: #f2f2f7;
+    border-radius: 20px;
+    padding: 2px 10px;
+    color: #3a3a3c;
+    font-weight: 500;
+  }
+  .stack-card .badge.free { background: #d1f4e0; color: #1c7a3a; }
+  .stack-card .badge.cheap { background: #fef5cc; color: #7a5c00; }
+
+  /* === FLOW === */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6e6e73;
+    margin-bottom: 14px;
+  }
+  .flow {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e5ea;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+  .flow-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 16px;
+    align-items: stretch;
+  }
+  .step-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: white;
+  }
+  .step-line {
+    width: 2px;
+    flex: 1;
+    background: #e5e5ea;
+    margin: 4px 0;
+    min-height: 16px;
+  }
+  .step:last-child .step-line { display: none; }
+  .step-body { padding-bottom: 20px; }
+  .step-body:last-child { padding-bottom: 0; }
+  .step-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .step-detail { font-size: 13px; color: #3a3a3c; line-height: 1.5; }
+  .step-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-top: 6px;
+  }
+
+  /* inbound colors */
+  .inbound .step-num { background: #007aff; }
+  .inbound .step-tag { background: #e8f1ff; color: #007aff; }
+
+  /* ai colors */
+  .ai .step-num { background: #5e5ce6; }
+  .ai .step-tag { background: #eeecff; color: #5e5ce6; }
+
+  /* outbound colors */
+  .outbound .step-num { background: #ff9500; }
+  .outbound .step-tag { background: #fff3e0; color: #bf6000; }
+
+  /* === CODE BLOCK === */
+  .code-block {
+    background: #1c1c1e;
+    border-radius: 12px;
+    padding: 20px 24px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #f5f5f7;
+    margin-top: 20px;
+    overflow-x: auto;
+  }
+  .code-block .comment { color: #636366; }
+  .code-block .key { color: #5e9eff; }
+  .code-block .val { color: #ff9f0a; }
+  .code-block .str { color: #30d158; }
+
+  /* === SHEET === */
+  .sheet-preview {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e5ea;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .sheet-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th {
+    background: #f2f2f7;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #6e6e73;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid #e5e5ea;
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid #f2f2f7; color: #3a3a3c; }
+  tr:last-child td { border-bottom: none; }
+  .val-chip {
+    display: inline-block;
+    background: #f2f2f7;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  /* === TIMELINE === */
+  .timeline {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e5ea;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .timeline-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
+  .tl-row { display: flex; gap: 0; margin-bottom: 0; }
+  .tl-block {
+    flex: 1;
+    padding: 14px 16px;
+    border-left: 3px solid #e5e5ea;
+    position: relative;
+  }
+  .tl-block:first-child { border-left-color: #30d158; }
+  .tl-block:nth-child(2) { border-left-color: #007aff; }
+  .tl-block:nth-child(3) { border-left-color: #5e5ce6; }
+  .tl-block:nth-child(4) { border-left-color: #ff9500; }
+  .tl-time { font-size: 11px; font-weight: 700; color: #6e6e73; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tl-task { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .tl-detail { font-size: 12px; color: #6e6e73; line-height: 1.4; }
+
+  /* === FOOTER === */
+  .footer-note {
+    text-align: center;
+    font-size: 13px;
+    color: #6e6e73;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e5ea;
+  }
+  .footer-note strong { color: #1d1d1f; }
+
+  @media (max-width: 640px) {
+    .compare, .stack-row { grid-template-columns: 1fr; }
+    .tl-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>✦ SPARK — POC Architecture</h1>
+  <p class="subtitle">Zero IT approvals. Build in a day. Prove the loop.</p>
+
+  <!-- COMPARE -->
+  <div class="compare">
+    <div class="compare-card poc">
+      <h3>POC — Build Today</h3>
+      <ul>
+        <li>Gmail account as spark inbox</li>
+        <li>Make.com for automation</li>
+        <li>Claude API for AI</li>
+        <li>Google Sheets as database</li>
+        <li>Gmail SMTP for outbound</li>
+        <li>Shared Sheet = the Hub</li>
+        <li><strong>0 IT approvals needed</strong></li>
+      </ul>
+    </div>
+    <div class="compare-card prod">
+      <h3>Production — After POC</h3>
+      <ul>
+        <li>M365 shared mailbox (spark@)</li>
+        <li>Power Automate for automation</li>
+        <li>Azure OpenAI (approved)</li>
+        <li>SharePoint List as database</li>
+        <li>Outlook HTML + Adaptive Cards</li>
+        <li>SharePoint page = the Hub</li>
+        <li>Proper IT onboarding</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- STACK -->
+  <p class="section-label">POC Stack — 4 tools, all free or near-free</p>
+  <div class="stack-row">
+    <div class="stack-card">
+      <div class="icon">📬</div>
+      <div class="tool">Gmail</div>
+      <div class="role">spark.poc@gmail.com — the inbox</div>
+      <div class="badge free">Free</div>
+    </div>
+    <div class="stack-card">
+      <div class="icon">⚙️</div>
+      <div class="tool">Make.com</div>
+      <div class="role">Automation engine — watches, routes, sends</div>
+      <div class="badge free">Free tier</div>
+    </div>
+    <div class="stack-card">
+      <div class="icon">🧠</div>
+      <div class="tool">Claude API</div>
+      <div class="role">AI extraction — who, what, value</div>
+      <div class="badge cheap">~$0.01/email</div>
+    </div>
+    <div class="stack-card">
+      <div class="icon">📊</div>
+      <div class="tool">Google Sheets</div>
+      <div class="role">Database + lookup table + the POC Hub</div>
+      <div class="badge free">Free</div>
+    </div>
+  </div>
+
+  <!-- INBOUND FLOW -->
+  <p class="section-label">Inbound — email comes in</p>
+  <div class="flow inbound">
+    <div class="flow-title">📥 Someone CCs spark.poc@gmail.com</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-name">Email arrives in Gmail inbox</div>
+          <div class="step-detail">Employee writes a thank-you, adds <strong>spark.poc@gmail.com</strong> to CC. Or forwards a customer email to it. Nothing else to do.</div>
+          <span class="step-tag">Sender action complete</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-name">Make.com polls the inbox every 5 minutes</div>
+          <div class="step-detail">Gmail trigger module watches for new messages. Filters out: replies from SPARK itself, auto-replies, emails from outside the team (using the roster sheet).</div>
+          <span class="step-tag">Make.com → Gmail connector</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-name">Roster lookup</div>
+          <div class="step-detail">Make.com looks up the sender's email in the <strong>Roster Sheet</strong> (Google Sheets tab). Gets: full name, team, manager name, manager email. This replaces Entra ID for the POC — fill it in manually once (30 min).</div>
+          <span class="step-tag">Google Sheets lookup</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI FLOW -->
+  <p class="section-label">AI extraction — the brain</p>
+  <div class="flow ai">
+    <div class="flow-title">🧠 Claude API processes the email</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-name">Make.com calls Claude API (HTTP module)</div>
+          <div class="step-detail">Sends the email body + sender context to Claude with a structured prompt. Asks Claude to return clean JSON.</div>
+          <span class="step-tag">claude-haiku-4-5 · fast · cheap</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">5</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-name">Claude returns structured JSON</div>
+          <div class="step-detail">Every field needed to build the Kudos Card and store the record. If anything is unclear, Claude flags it with <code>needs_clarification: true</code>.</div>
+
+          <div class="code-block">
+<span class="comment">// Claude response (example)</span>
+{
+  <span class="key">"recipient_name"</span>: <span class="str">"Maria Santos"</span>,
+  <span class="key">"sender_name"</span>: <span class="str">"James Reyes"</span>,
+  <span class="key">"source_type"</span>: <span class="str">"peer"</span>,
+  <span class="key">"what_happened"</span>: <span class="str">"Maria stepped in during the
+    benefits system outage and resolved it
+    before it impacted employees."</span>,
+  <span class="key">"core_value"</span>: <span class="str">"Customer-driven"</span>,
+  <span class="key">"sentiment"</span>: <span class="str">"positive"</span>,
+  <span class="key">"needs_clarification"</span>: <span class="val">false</span>
+}
+          </div>
+          <span class="step-tag">Structured JSON output</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">6</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-name">Make.com writes a row to Google Sheets</div>
+          <div class="step-detail">One row per kudos. Timestamp, sender, recipient, team, what happened, value, source type. This is the database. The Hub for POC is just this sheet, shared with the director.</div>
+          <span class="step-tag">Google Sheets — Kudos Log tab</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTBOUND FLOW -->
+  <p class="section-label">Outbound — the magic moment</p>
+  <div class="flow outbound">
+    <div class="flow-title">📤 Three emails go out automatically</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-left"><div class="step-num">7</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-name">Kudos Card → recipient's inbox</div>
+          <div class="step-detail">
+            Make.com sends an HTML email <em>from</em> spark.poc@gmail.com <em>to</em> the recipient.
+            Clean, warm, personal. The quote. Who sent it. The value it shows. This is the product.
+            <br><br>
+            <strong>For POC:</strong> HTML template hardcoded in Make.com email module with
+            <code>{{recipient_name}}</code>, <code>{{what_happened}}</code>, <code>{{core_value}}</code> variables.
+          </div>
+          <span class="step-tag">Gmail send module · HTML email</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">8</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-name">Manager notification → manager's inbox</div>
+          <div class="step-detail">
+            Short email to the recipient's manager (looked up from the roster sheet):
+            <em>"Maria just received a kudos from James. Here's what they said."</em>
+            <br><br>
+            Includes a <strong>mailto: button</strong> that opens a pre-filled email to Maria
+            with a "👏 Adding my thanks — [manager name]" message already written.
+            One click, one send.
+          </div>
+          <span class="step-tag">Gmail send module · mailto: button</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">9</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-name">Sender confirmation → (optional, silent)</div>
+          <div class="step-detail">Nothing sent to the sender for POC. Keeps it clean. If they CC'd spark, they already know it worked. Add a quiet "✓ SPARK received your kudos" in v1 if people ask.</div>
+          <span class="step-tag">Skip for POC</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHEETS PREVIEW -->
+  <p class="section-label">Google Sheets — two tabs</p>
+  <div class="sheet-preview">
+    <div class="sheet-title">📋 Tab 1: Kudos Log (the database + POC hub)</div>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Date</th>
+          <th>Recipient</th>
+          <th>Team</th>
+          <th>Sender</th>
+          <th>Source</th>
+          <th>What happened</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td>Sep 27</td>
+          <td>Maria Santos</td>
+          <td>HCM Eng</td>
+          <td>James Reyes</td>
+          <td>Peer</td>
+          <td>Resolved benefits outage before impact...</td>
+          <td><span class="val-chip">Customer-driven</span></td>
+        </tr>
+        <tr>
+          <td>Sep 26</td>
+          <td>Ben Aquino</td>
+          <td>WFM</td>
+          <td>Sarah Chen</td>
+          <td>Peer</td>
+          <td>Covered two extra shifts without being asked...</td>
+          <td><span class="val-chip">Put People First</span></td>
+        </tr>
+        <tr>
+          <td>Sep 24</td>
+          <td>Marcus Williams</td>
+          <td>HCM Eng</td>
+          <td>Client email (fwd)</td>
+          <td>Customer</td>
+          <td>Client praised Marcus for turning around...</td>
+          <td><span class="val-chip">Customer-driven</span></td>
+        </tr>
+      </table>
+    </div>
+    <br>
+    <div class="sheet-title">👥 Tab 2: Roster (replaces Entra ID for POC)</div>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Team</th>
+          <th>Manager Name</th>
+          <th>Manager Email</th>
+        </tr>
+        <tr>
+          <td>Maria Santos</td>
+          <td>maria.santos@co.com</td>
+          <td>HCM Engineering</td>
+          <td>Diana Cruz</td>
+          <td>diana.cruz@co.com</td>
+        </tr>
+        <tr>
+          <td>Ben Aquino</td>
+          <td>ben.aquino@co.com</td>
+          <td>WFM</td>
+          <td>Mark Torres</td>
+          <td>mark.torres@co.com</td>
+        </tr>
+      </table>
+    </div>
+    <p style="font-size:12px;color:#6e6e73;margin-top:12px;">Fill this manually once. 30 minutes. This is the only setup step that requires human effort beyond the automation.</p>
+  </div>
+
+  <!-- TIMELINE -->
+  <p class="section-label">Build timeline — one day</p>
+  <div class="timeline">
+    <div class="timeline-title">⏱ Day 1 plan</div>
+    <div class="tl-row">
+      <div class="tl-block">
+        <div class="tl-time">Morning · 2h</div>
+        <div class="tl-task">Setup</div>
+        <div class="tl-detail">Create Gmail account. Set up Make.com. Get Claude API key from console.anthropic.com. Create the two Google Sheets tabs.</div>
+      </div>
+      <div class="tl-block">
+        <div class="tl-time">Mid-morning · 2h</div>
+        <div class="tl-task">Make.com scenario</div>
+        <div class="tl-detail">Build the 9-step flow. Gmail trigger → Sheets lookup → Claude HTTP call → Sheets write → 2 email sends.</div>
+      </div>
+      <div class="tl-block">
+        <div class="tl-time">Afternoon · 2h</div>
+        <div class="tl-task">Email templates</div>
+        <div class="tl-detail">Write the Kudos Card HTML. Write the manager notification. Test with a real email to spark.poc@gmail.com.</div>
+      </div>
+      <div class="tl-block">
+        <div class="tl-time">Late afternoon · 1h</div>
+        <div class="tl-task">Demo</div>
+        <div class="tl-detail">Send one live kudos email in front of the director. Watch the card arrive in the recipient's inbox in under 5 minutes. That's the POC.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-note">
+    <strong>What the POC proves:</strong> the core loop works. Email in → AI understands → beautiful card out → manager notified. Everything else is logistics.<br><br>
+    After the POC, migrate the same logic to M365: shared mailbox → Power Automate → Azure OpenAI → SharePoint → Outlook Adaptive Cards. The architecture is identical. Only the tools change.
+  </div>
+
+</div>
+</body>
+</html>
