@@ -48,93 +48,97 @@ list of everyone recognized, and **one prominent "View the full hub →" link**.
 
 That link is the only way stakeholders need to find the Hub. No bookmarks, no separate URL to remember.
 
-### 5. The Hub — "I want more" for managers and directors
-The Hub is not a destination. It's what the Spotlight links to.
+### 5. The Hub — the director's single source of truth
+**Design principle: the email is the channel. The hub is the database.**
+
+The email does the emotional work — the Kudos Card, the Spotlight. The Hub does the
+analytical work — it answers the question a director asks once a month: *"How is my team
+doing in terms of recognition?"* Without the Hub, answering that means digging through
+30 emails. That's not a director's job.
+
+The Hub is not a social wall. It's a command center.
 
 **MVP Hub = one SharePoint page, three sections:**
 
-| Section | What it shows |
+| Section | What it answers |
 |---|---|
-| **This month** | Stats at a glance: total kudos, # recognized, # givers, customer kudos count |
-| **Recognition feed** | Filterable by team, value, or month. One card per kudos: name, quote, value tags. |
-| **Leaderboard** | Top recognized teams this month (not individuals — avoids awkward competition at MVP) |
+| **This month at a glance** | Is recognition happening? (Total kudos, # recognized, # givers, customer kudos) |
+| **Recognition feed** | Who's being recognized and for what? (Filterable by team, value, month) |
+| **Team leaderboard** | Which teams are thriving? (Team-level only — individual ranking demotivates at this stage) |
 
-That's it. No social wall, no likes, no comments at MVP. The goal is: a manager clicks the link from the Spotlight, gets their question answered in 10 seconds, and closes the tab.
+The Spotlight email links here. That's the only navigation needed.
 
-**Why not individual leaderboard yet?** Team-level recognition is motivating. Individual leaderboards at early stage can demotivate the people not on them — we want everyone leaning in, not comparing. Revisit in v2 with more data.
+**Access:** Scoped to the department in SharePoint. M365 login = access. Nothing new to set up.
 
-**Access:** Scoped to the department in SharePoint. Anyone on the department DL can view. No login separate from their normal M365 account.
+**Who uses it:**
+- **Director:** monthly check-in, big picture. Is the culture of recognition growing?
+- **Managers:** drill into their team. Are my people being seen?
+- **ICs:** curiosity. Nobody's excluded — but it's not designed for them.
 
-### 6. Bumps — the viral recognition loop
-Three distinct bumps. Each is warm, specific, and easy to act on. One per person per type per month, max.
+### 6. Bumps — two bumps, two audiences
+One bump for individual contributors. One for managers. That's it.
 
 ---
 
-#### 6a. Employee bump — "Have you recognized someone lately?"
-**Trigger:** It's mid-month (around the 15th) and you haven't CC'd spark@ once yet.
+#### 6a. IC bump — "You haven't recognized anyone yet this month"
+**Audience:** Individual contributors (and leads without direct reports)
+**Trigger:** Around the 15th. You haven't CC'd spark@ once this month.
 
-**What they get:** A short email with:
-- A warm one-liner: *"SPARK noticed you haven't recognized anyone from your team this month yet."*
-- **2–3 AI suggestions** based on their team roster and recent kudos patterns (e.g., "Does someone always answer your questions? Is someone covering for a gap right now?")
-- A **pre-filled email template** they can click, edit two words, and send. The template already has `spark@` in CC. Zero blank page.
+**Structure: personal hook first, then fallbacks**
 
-**Example:**
-> Hi [Name], it's quick — here are some people on your team who might deserve a moment of recognition this month:
+SPARK checks one thing before building the email: *did anyone recognize this person recently
+but hasn't been recognized back?* If yes — that's the lead suggestion. The reciprocity hook
+is the most compelling reason to act because it's personal and specific.
+
+If no reciprocity hook exists, it falls back to memory-sparking prompts from the team roster.
+
+**Example — with reciprocity hook:**
+> *Hey [Name] — you haven't recognized anyone this month yet. Here's an easy place to start:*
 >
-> 🔹 **Sarah Chen** — she's been answering questions for the whole team during the rollout. Is that something you've noticed?
-> 🔹 **Marcus Williams** — he stepped up when the deadline moved. Maybe worth a "thank you for that"?
+> 🔹 **Sophia recognized you last month** for your work on the benefits rollout. Maybe it's time to return the appreciation?
+> 🔹 Does someone on your team always pick up the slack without being asked?
+> 🔹 Who made your work easier this month, even in a small way?
 >
-> [**✉ Recognize Sarah →**]  [**✉ Recognize Marcus →**]
+> [**✉ Recognize Sophia →**]  [**✉ Recognize someone else →**]
 >
-> Clicking opens a pre-filled email. Edit, hit send. That's it.
+> *Clicking opens a pre-filled email. Edit two words. Hit send.*
+
+**Example — without reciprocity hook:**
+> *Hey [Name] — you haven't recognized anyone this month yet. Here are a few prompts:*
+>
+> 🔹 Is there someone who always shows up when things get hard?
+> 🔹 Who on the team quietly makes things better without the credit?
+> 🔹 Did someone help you think through something difficult recently?
+>
+> [**✉ Recognize someone →**]
 
 **The suggestion engine — memory sparking, not data reporting**
 
-SPARK has no access to ticket systems, project data, or any external signals. And that's fine.
-The goal of a suggestion isn't to *tell* the sender what someone did — it's to **spark the memory
-they already have.** The right prompt makes someone think "oh yeah, actually she *did* help me
-with that." The AI's job is to ask the right question, not report a fact.
+SPARK has no access to ticket systems or project data. That's intentional.
+The goal of a suggestion is not to tell the sender what someone did.
+It's to **spark the memory they already have.**
 
 SPARK only uses what it knows:
-- Entra ID: team roster, names, role/title (for role-appropriate prompts)
-- Its own kudos history: who's been recognized this month, who recognized *you* (reciprocity), past recognition themes
+- Entra ID: team roster, names, role/title
+- Its own kudos history: who hasn't been recognized, who recognized *this person* (reciprocity)
 
-**Suggestion format — questions and prompts, not statements:**
-Instead of: *"Ben closed 14 support tickets"* (requires external data, may be wrong)
-SPARK says: *"Is there someone who always shows up when you need them?"*
-Or more personal: *"Sarah recognized you last month. Has she done anything recently worth noting?"*
-Or role-targeted: *"As a lead, you probably see effort others miss. Who on your team quietly makes things better?"*
+Suggestions are questions, not statements. Questions can't be wrong.
+A question like *"who made your work easier this month?"* works for any team, any role, any context.
 
-The suggestions are situational memory triggers. Generic enough to work without data.
-Specific enough (name + question) to actually land.
-
-**AI logic for suggestions:**
-- Roster from Entra ID (their direct team)
-- Exclude people already recognized by them this month
-- Prioritize: people who recognized *them* recently (reciprocity logic, see 6b), and people in the team with zero kudos this month (equity logic)
-- Use role/title from Entra ID to pick prompts that fit their vantage point (IC vs. lead vs. manager)
-
----
-
-#### 6b. Reciprocity bump — "Jerry recognized you. Maybe return the love?"
-**Trigger:** Someone recognized you in the last 2–4 weeks, and you haven't recognized them back yet. Runs once per pairing per month.
-
-**What they get:** A short, warm nudge. Not a guilt trip — a prompt:
-
-> *"Jerry gave you a shoutout 3 weeks ago for stepping up on the migration project. Maybe it's time to return the recognition?"*
->
-> [**✉ Recognize Jerry →**]
-
-**Why this is powerful:** It creates a viral loop. Every kudos sent generates a potential return kudos. Volume compounds. People who never thought to recognize someone get a concrete, personal reason to do so.
+**AI logic:**
+- Reciprocity: lead with anyone who recognized this person in the last 30 days but hasn't been recognized back
+- Equity: include people on their roster with zero kudos this month
+- Role-appropriate tone from Entra ID title (IC vs. lead)
+- Max 3 suggestions per email. One pre-filled template per suggestion.
 
 **Guardrails:**
-- Max 1 reciprocity bump per person per month
-- Never triggered if the other person already has multiple kudos from other people (they're not being overlooked)
-- Tone is always warm and optional-feeling, never transactional ("you owe them one")
+- One IC bump per person per month, maximum
+- Never sent to someone who has already recognized someone this month
+- Tone is warm and optional — never guilt-tripping
 
 ---
 
-#### 6c. Manager equity bump — "Someone on your team hasn't been recognized yet"
+#### 6b. Manager equity bump — "Someone on your team hasn't been recognized yet"
 **Trigger:** ~5 business days before end of month. A manager has one or more team members with zero kudos for the entire month.
 
 **What they get:** A quiet, private email (not to the whole team — just them):
@@ -169,20 +173,26 @@ they just need the prompt. This feature is the department's morale safety net.
 
 ---
 
-## How the bump system creates a viral loop
+## How the two bumps create a recognition flywheel
 
 ```
-Someone gets a Kudos Card  →  feels seen  →  more likely to recognize others
-            ↓
-Reciprocity bump fires  →  they recognize the person who recognized them
-            ↓
-That person gets a Kudos Card  →  loop repeats
-            ↑
-Manager equity bump  →  fills in the gaps for quiet contributors
-Employee bump  →  gets passive observers to participate for the first time
+Someone gets a Kudos Card
+        ↓
+Feels seen → more likely to recognize others
+        ↓
+IC bump fires mid-month if they haven't acted yet
+  → reciprocity hook: "Sophia recognized you — maybe return it?"
+  → they recognize Sophia
+        ↓
+Sophia gets a Kudos Card → loop repeats
+
+Meanwhile:
+Manager equity bump (end of month)
+  → quiet contributors who slipped through get recognized
+  → they receive a Kudos Card → enter the flywheel
 ```
 
-Volume doesn't just grow linearly — it compounds. That's the product.
+Two bumps. Two audiences. One flywheel. Volume compounds — that's the product.
 
 ---
 
