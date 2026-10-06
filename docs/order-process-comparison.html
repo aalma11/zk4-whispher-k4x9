@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lunch Ordering Process: Before vs After</title>
+<style>
+  :root {
+    --tatay: #d97706; --emp: #2563eb; --hr: #7c3aed; --sys: #059669;
+    --bg: #f8fafc; --card: #fff; --line: #94a3b8; --text: #0f172a; --muted: #64748b;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 24px; }
+  h1 { text-align: center; margin: 0 0 4px; font-size: 24px; }
+  .sub { text-align: center; color: var(--muted); margin-bottom: 20px; font-size: 14px; }
+  .legend { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; font-size: 13px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1200px; margin: 0 auto; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .col { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .col h2 { margin: 0 0 4px; font-size: 18px; }
+  .col.before h2 { color: #b91c1c; }
+  .col.after h2 { color: #047857; }
+  .col .tag { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .flow { display: flex; flex-direction: column; align-items: center; }
+  .node { width: 100%; max-width: 440px; border: 2px solid var(--line); border-left-width: 8px; border-radius: 8px; padding: 8px 12px; background: #fff; font-size: 14px; }
+  .node .who { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+  .node small { display: block; color: var(--muted); margin-top: 3px; font-size: 12px; }
+  .tatay { border-color: var(--tatay); } .tatay .who { color: var(--tatay); }
+  .emp   { border-color: var(--emp); }   .emp .who   { color: var(--emp); }
+  .hr    { border-color: var(--hr); }    .hr .who    { color: var(--hr); }
+  .sys   { border-color: var(--sys); }   .sys .who   { color: var(--sys); }
+  .term { border-radius: 999px; text-align: center; background: #0f172a; color: #fff; border: none; font-weight: 600; padding: 8px 16px; width: auto; min-width: 120px; }
+  .arrow { width: 2px; height: 20px; background: var(--line); position: relative; margin: 0 auto; }
+  .arrow::after { content: ""; position: absolute; bottom: -1px; left: -4px; border: 5px solid transparent; border-top: 7px solid var(--line); border-bottom: 0; }
+  .note { font-size: 11px; color: var(--muted); margin: 2px 0; text-align: center; }
+  .pain { background: #fef2f2; border: 1px dashed #f87171; color: #991b1b; border-radius: 6px; padding: 6px 10px; font-size: 12px; max-width: 440px; width: 100%; margin-top: 4px; }
+  .gain { background: #ecfdf5; border: 1px dashed #34d399; color: #065f46; border-radius: 6px; padding: 6px 10px; font-size: 12px; max-width: 440px; width: 100%; margin-top: 4px; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 440px; }
+  .split .node { max-width: none; }
+  .formbox { background: #f5f3ff; border: 1px solid #c4b5fd; border-radius: 6px; padding: 6px 8px; margin-top: 6px; font-size: 12px; font-family: ui-monospace, Menlo, monospace; line-height: 1.5; }
+  .compare { max-width: 1200px; margin: 24px auto 0; background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  th { background: #f1f5f9; }
+  td:nth-child(2) { color: #991b1b; } td:nth-child(3) { color: #065f46; }
+  @media print { body { background: #fff; padding: 8px; } .col, .compare { box-shadow: none; border: 1px solid #ddd; } }
+</style>
+</head>
+<body>
+
+<h1>Lunch Ordering Process: Before vs After</h1>
+<div class="sub">Tatay (food vendor) &rarr; office employees &middot; Current manual flow vs proposed Lark form flow</div>
+
+<div class="legend">
+  <span><i class="dot" style="background:var(--tatay)"></i>Tatay (vendor)</span>
+  <span><i class="dot" style="background:var(--emp)"></i>Employee</span>
+  <span><i class="dot" style="background:var(--hr)"></i>HR</span>
+  <span><i class="dot" style="background:var(--sys)"></i>Lark / System</span>
+</div>
+
+<div class="grid">
+
+  <!-- BEFORE -->
+  <section class="col before">
+    <h2>BEFORE: Current Process (Manual)</h2>
+    <div class="tag">Tatay walks department to department</div>
+    <div class="flow">
+      <div class="node term">Start (Morning)</div><div class="arrow"></div>
+
+      <div class="node tatay"><div class="who">Tatay</div>Writes the menu of the day by hand</div><div class="arrow"></div>
+
+      <div class="node tatay"><div class="who">Tatay</div>Goes to each department with the menu</div><div class="arrow"></div>
+
+      <div class="node emp"><div class="who">Employee</div>Verbally tells Tatay the order
+        <small>Picks from the menu, or asks for extra food not on the menu</small></div><div class="arrow"></div>
+
+      <div class="node tatay"><div class="who">Tatay</div>Writes down each order and employee name
+        <small>Repeats for every department</small></div>
+      <div class="pain">Risks: mishearing, missed employees, no single record, lots of walking.</div>
+      <div class="arrow"></div>
+
+      <div class="node tatay"><div class="who">Tatay</div>Finishes all departments, prepares the food</div><div class="arrow"></div>
+
+      <div class="node tatay"><div class="who">Tatay</div>Returns at lunch time, packs food per employee
+        <small>Packages labeled with employee names</small></div><div class="arrow"></div>
+
+      <div class="node emp"><div class="who">Employee</div>Receives own package</div><div class="arrow"></div>
+
+      <div class="node term">End</div>
+    </div>
+  </section>
+
+  <!-- AFTER -->
+  <section class="col after">
+    <h2>AFTER: New Process (Lark Form)</h2>
+    <div class="tag">HR collects orders digitally; Tatay only reads a printout</div>
+    <div class="flow">
+      <div class="node term">Start (Morning)</div><div class="arrow"></div>
+
+      <div class="node tatay"><div class="who">Tatay</div>Gives the menu to HR</div><div class="arrow"></div>
+
+      <div class="node hr"><div class="who">HR</div>Creates / updates the form in Lark
+        <small>Predefined food list from the repository</small>
+        <div class="formbox">&#9744; Fish &nbsp; &#9744; Adobo &nbsp; &#9744; Menudo<br>[ new food name ] [Add]</div></div><div class="arrow"></div>
+
+      <div class="node sys"><div class="who">Lark / System</div>"Add new" saves the food to the food repository
+        <small>Available for future days</small></div><div class="arrow"></div>
+
+      <div class="node hr"><div class="who">HR</div>Ticks the foods Tatay is delivering today, then Submit</div><div class="arrow"></div>
+
+      <div class="node sys"><div class="who">Lark / System</div>Publishes the employee form with only today's foods
+        <small>Open for 1 to 2 hours</small></div><div class="arrow"></div>
+
+      <div class="node emp"><div class="who">Employee</div>Fills in the form, then Submit
+        <div class="formbox">Fish &nbsp;[ 1 ]<br>Menudo [ 2 ]<br>Remarks: (extra food request)</div>
+        <small>Quantity field per food. Name is fetched automatically from the Lark account</small></div><div class="arrow"></div>
+
+      <div class="node hr"><div class="who">HR</div>Clicks "Generate menu for that day"</div><div class="arrow"></div>
+
+      <div class="node sys"><div class="who">Lark / System</div>Produces the summary</div>
+      <div class="split" style="margin-top:6px">
+        <div class="node sys"><div class="who">Top: per food</div>Total orders per food<small>e.g. Menudo: 5</small></div>
+        <div class="node sys"><div class="who">Bottom: per employee</div>Each name with their orders<small>e.g. Emp 1: Menudo, Fish</small></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node hr"><div class="who">HR</div>Prints the summary form and hands it to Tatay</div><div class="arrow"></div>
+
+      <div class="node tatay"><div class="who">Tatay</div>Prepares and delivers food as listed on the form</div>
+      <div class="gain">Benefits: no walking around, one record, auto names, clear totals.</div>
+      <div class="arrow"></div>
+
+      <div class="node term">End</div>
+    </div>
+  </section>
+</div>
+
+<div class="compare">
+  <h2 style="margin-top:0">Summary of Changes</h2>
+  <table>
+    <tr><th>Aspect</th><th>Before</th><th>After</th></tr>
+    <tr><td>Order taking</td><td>Tatay visits every department</td><td>Employees submit a Lark form</td></tr>
+    <tr><td>Menu</td><td>Handwritten by Tatay</td><td>HR maintains a food repository, ticks the foods for the day</td></tr>
+    <tr><td>Extra requests</td><td>Told verbally</td><td>Remarks field on the form</td></tr>
+    <tr><td>Quantity</td><td>Verbal</td><td>Quantity input per food</td></tr>
+    <tr><td>Employee identity</td><td>Written by hand</td><td>Fetched automatically from Lark</td></tr>
+    <tr><td>Totals</td><td>Counted by Tatay</td><td>Auto summary per food and per employee</td></tr>
+    <tr><td>Hand-off to Tatay</td><td>Tatay holds his own notes</td><td>HR prints the summary for Tatay</td></tr>
+  </table>
+</div>
+
+</body>
+</html>
