@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lunch Ordering: Before vs After (Flyer)</title>
+<style>
+  @page { size: 1080px 1620px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 1080px; height: 1620px; position: relative; overflow: hidden; font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif; font-weight: 800;
+    background: linear-gradient(180deg, #4cc3f7 0%, #8fdcfb 30%, #d9f4ff 48%, #b6e87a 49%, #6cc24a 100%); }
+  .abs { position: absolute; }
+  .rays { position: absolute; left: 50%; top: -420px; width: 1400px; height: 1400px; margin-left: -700px; border-radius: 50%;
+    background: repeating-conic-gradient(rgba(255,255,255,.28) 0 7deg, transparent 7deg 14deg); }
+  .glow { position: absolute; left: 140px; top: 120px; width: 800px; height: 520px; background: radial-gradient(closest-side, rgba(255,255,255,.85), rgba(255,255,255,0)); }
+  .sun { right: 30px; top: 110px; font-size: 130px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.25)); }
+  .cloud { opacity: .95; }
+  .spark { font-size: 44px; filter: drop-shadow(0 0 8px #fff); }
+
+  .kicker { left: 200px; top: 160px; width: 680px; text-align: center; }
+  .kicker span { display: inline-block; background: linear-gradient(180deg,#f43f9a,#be185d); color: #fff; font-size: 28px; letter-spacing: .05em; padding: 8px 46px; transform: skewX(-6deg);
+    border: 4px solid #fff; box-shadow: 0 6px 0 #831843, 0 0 20px rgba(255,255,255,.8); }
+  .big { left: 0; width: 100%; text-align: center; font-weight: 900; line-height: .9; white-space: nowrap; -webkit-text-stroke: 12px #fff; paint-order: stroke fill; text-shadow: 0 12px 0 rgba(0,0,0,.2), 0 0 30px rgba(255,255,255,.9); }
+  .big i { font-style: normal; display: inline-block; }
+  .big.l1 { top: 225px; font-size: 128px; } .big.l2 { top: 350px; font-size: 100px; }
+  .c1{color:#ef4444}.c2{color:#f59e0b}.c3{color:#22c55e}.c4{color:#3b82f6}.c5{color:#a855f7}.c6{color:#ec4899}
+
+  .ribbon { left: 90px; top: 495px; width: 900px; height: 96px; background: linear-gradient(180deg,#2347a8,#1e3a8a); box-shadow: 0 8px 0 rgba(0,0,0,.22);
+    clip-path: polygon(0 14%, 4% 14%, 4% 0, 96% 0, 96% 14%, 100% 14%, 100% 86%, 96% 86%, 96% 100%, 4% 100%, 4% 86%, 0 86%); }
+  .ribbon-text { left: 90px; top: 495px; width: 900px; height: 96px; display: flex; align-items: center; justify-content: center; gap: 18px; white-space: nowrap; color: #fff; font-size: 31px; text-shadow: 0 3px 0 rgba(0,0,0,.3); }
+  .ribbon-text b { color: #fde047; }
+
+  .col { top: 625px; width: 470px; height: 640px; border-radius: 26px; padding: 0 22px 14px; box-shadow: 0 10px 0 rgba(0,0,0,.2); border: 6px solid #fff; }
+  .col.before { left: 34px; background: linear-gradient(180deg,#fff1f2,#fffdf5 25%); transform: rotate(-.8deg); }
+  .col.after { right: 34px; background: linear-gradient(180deg,#ecfdf5,#fffdf5 25%); transform: rotate(.8deg); }
+  .col h2 { margin: -26px -22px 8px; text-align: center; color: #fff; font-size: 38px; padding: 10px 0 8px; letter-spacing: .06em; text-shadow: 0 3px 0 rgba(0,0,0,.25); border-radius: 20px 20px 0 0; }
+  .before h2 { background: linear-gradient(180deg,#f87171,#dc2626); }
+  .after h2 { background: linear-gradient(180deg,#34d399,#059669); }
+  .col .sub { text-align: center; font-size: 18px; color: #64748b; margin-bottom: 4px; letter-spacing: .04em; }
+  .row { display: flex; align-items: center; gap: 12px; height: 72px; border-bottom: 3px dotted #cbd5e1; font-size: 21px; line-height: 1.12; }
+  .row:last-child { border-bottom: none; }
+  .row .e { font-size: 38px; width: 50px; text-align: center; flex: none; }
+  .before .row { color: #b91c1c; } .after .row:nth-child(odd) { color: #047857; } .after .row:nth-child(even) { color: #1d4ed8; }
+  .before .row:nth-child(even) { color: #be185d; }
+  .before.col .row { height: 90px; padding-right: 36px; } .after.col .row { height: 76px; padding-left: 30px; }
+
+  .vs { left: 480px; top: 900px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fde047, #f59e0b); border: 8px solid #fff;
+    box-shadow: 0 8px 0 rgba(0,0,0,.25), 0 0 30px rgba(253,224,71,.9); display: flex; align-items: center; justify-content: center; font-size: 50px; color: #dc2626; font-weight: 900; z-index: 5; text-shadow: 0 3px 0 #fff; transform: rotate(-8deg); }
+
+  .chips { left: 40px; top: 1290px; width: 1000px; display: flex; gap: 14px; justify-content: center; }
+  .chip { flex: 1; background: #fff; border: 5px solid; border-radius: 22px; text-align: center; padding: 8px 6px 10px; font-size: 20px; line-height: 1.1; box-shadow: 0 6px 0 rgba(0,0,0,.18); }
+  .chip .e { display: block; font-size: 40px; }
+  .k1{border-color:#ef4444;color:#b91c1c}.k2{border-color:#f59e0b;color:#b45309}.k3{border-color:#22c55e;color:#15803d}.k4{border-color:#3b82f6;color:#1d4ed8}
+
+  .purple { left: 190px; top: 1425px; width: 700px; text-align: center; background: linear-gradient(180deg,#8b5cf6,#6d28d9); color: #fde047; font-size: 44px; padding: 4px 0 8px; transform: skewX(-4deg); border: 5px solid #fff; box-shadow: 0 7px 0 rgba(0,0,0,.22); text-shadow: 0 3px 0 rgba(0,0,0,.3); }
+  .yellow { left: 215px; top: 1503px; width: 650px; text-align: center; background: linear-gradient(180deg,#fef08a,#fde047); color: #1e3a8a; font-size: 32px; padding: 4px 0 6px; transform: skewX(-4deg); border: 4px solid #1e3a8a; box-shadow: 0 6px 0 rgba(0,0,0,.2); }
+  .addr { left: 150px; top: 1560px; width: 780px; height: 50px; background: #fffbe6; border: 4px solid #84cc16; border-radius: 14px; display: flex; align-items: center; gap: 12px; padding: 0 20px; color: #1e3a8a; font-size: 20px; box-shadow: 0 5px 0 rgba(0,0,0,.18); }
+  .addr .blank { display: inline-block; width: 220px; border-bottom: 3px dashed #94a3b8; height: 16px; margin: 0 6px; }
+</style>
+</head>
+<body>
+  <div class="rays"></div>
+  <div class="glow"></div>
+  <div class="abs sun">🌞</div>
+  <div class="abs cloud" style="left:30px;top:70px;font-size:90px">☁️</div>
+  <div class="abs cloud" style="left:760px;top:40px;font-size:64px">☁️</div>
+
+  <svg class="abs" style="left:0;top:0" width="1080" height="150" viewBox="0 0 1080 150">
+    <path d="M-10 18 Q540 118 1090 18" fill="none" stroke="#7c5a2b" stroke-width="4"/>
+    <g id="flags"></g>
+  </svg>
+  <script>
+    const cols=['#ef4444','#f59e0b','#22c55e','#3b82f6','#a855f7','#ec4899'];
+    const g=document.getElementById('flags');
+    for(let i=0;i<19;i++){
+      const t=(i+.5)/19;
+      const yy=(1-t)*(1-t)*18+2*t*(1-t)*118+t*t*18;
+      const xx=(1-t)*(1-t)*-10+2*t*(1-t)*540+t*t*1090;
+      g.insertAdjacentHTML('beforeend',`<polygon points="${xx-24},${yy} ${xx+24},${yy} ${xx},${yy+52}" fill="${cols[i%6]}" stroke="#fff" stroke-width="3"/>`);
+    }
+  </script>
+
+  <svg class="abs" style="left:-30px;top:330px" width="150" height="360" viewBox="0 0 150 360">
+    <path d="M45 120 Q60 230 70 350 M95 105 Q85 220 70 350" stroke="#64748b" stroke-width="3" fill="none"/>
+    <ellipse cx="42" cy="75" rx="38" ry="48" fill="#ec4899"/><ellipse cx="30" cy="58" rx="9" ry="14" fill="#fff" opacity=".55"/>
+    <ellipse cx="100" cy="62" rx="36" ry="46" fill="#84cc16"/><ellipse cx="88" cy="45" rx="9" ry="14" fill="#fff" opacity=".55"/>
+  </svg>
+  <svg class="abs" style="left:950px;top:300px" width="170" height="340" viewBox="0 0 170 340">
+    <path d="M60 110 Q80 220 90 330 M120 100 Q110 220 90 330" stroke="#64748b" stroke-width="3" fill="none"/>
+    <ellipse cx="55" cy="65" rx="36" ry="46" fill="#3b82f6"/><ellipse cx="44" cy="48" rx="9" ry="14" fill="#fff" opacity=".55"/>
+    <ellipse cx="118" cy="58" rx="32" ry="42" fill="#f97316"/><ellipse cx="108" cy="42" rx="8" ry="12" fill="#fff" opacity=".55"/>
+  </svg>
+  <div class="abs spark" style="left:150px;top:250px">✨</div>
+  <div class="abs spark" style="left:900px;top:215px">⭐</div>
+  <div class="abs spark" style="left:110px;top:440px">⭐</div>
+  <div class="abs spark" style="left:880px;top:455px">✨</div>
+
+  <div class="abs kicker"><span>OFFICE LUNCH IS CHANGING!</span></div>
+  <div class="abs big l1"><i class="c1">L</i><i class="c2">U</i><i class="c3">N</i><i class="c4">C</i><i class="c5">H</i> <i class="c6">O</i><i class="c1">R</i><i class="c2">D</i><i class="c3">E</i><i class="c4">R</i></div>
+  <div class="abs big l2"><i class="c5">B</i><i class="c6">E</i><i class="c1">F</i><i class="c2">O</i><i class="c3">R</i><i class="c4">E</i> <i class="c5">&amp;</i> <i class="c6">A</i><i class="c1">F</i><i class="c2">T</i><i class="c3">E</i><i class="c4">R</i></div>
+
+  <div class="abs ribbon"></div>
+  <div class="abs ribbon-text">🍱 <span>From <b>walking &amp; shouting</b> to <b>one easy Lark form</b></span> 📱</div>
+
+  <div class="abs col before">
+    <h2>😩 BEFORE</h2>
+    <div class="sub">THE OLD WAY</div>
+    <div class="row"><span class="e">✍️</span>Tatay writes the menu by hand</div>
+    <div class="row"><span class="e">🚶</span>Walks to every department</div>
+    <div class="row"><span class="e">🗣️</span>Employees tell their orders by voice, extras too</div>
+    <div class="row"><span class="e">📝</span>Tatay notes every order and name</div>
+    <div class="row"><span class="e">⏳</span>Comes back at lunch time</div>
+    <div class="row"><span class="e">📦</span>Packages labeled with names</div>
+  </div>
+
+  <div class="abs vs">VS</div>
+
+  <div class="abs col after">
+    <h2>🎉 AFTER</h2>
+    <div class="sub">THE NEW WAY</div>
+    <div class="row"><span class="e">📋</span>Tatay gives the menu to HR</div>
+    <div class="row"><span class="e">💻</span>HR builds the Lark form, "Add new" saves new foods</div>
+    <div class="row"><span class="e">✅</span>HR ticks today's foods, then Submit</div>
+    <div class="row"><span class="e">📱</span>Employees enter quantity, extras in Remarks</div>
+    <div class="row"><span class="e">📊</span>HR generates totals per food and per employee</div>
+    <div class="row"><span class="e">🖨️</span>HR prints the list for Tatay</div>
+    <div class="row"><span class="e">🛵</span>Tatay delivers as listed</div>
+  </div>
+
+  <div class="abs chips">
+    <div class="chip k1"><span class="e">🚫</span>No more door-to-door</div>
+    <div class="chip k2"><span class="e">🗂️</span>One clear record</div>
+    <div class="chip k3"><span class="e">🪪</span>Names filled in automatically</div>
+    <div class="chip k4"><span class="e">🔢</span>Totals counted for you</div>
+  </div>
+
+  <div class="abs purple">EASY FOR EVERYONE!</div>
+  <div class="abs yellow">ALL DEPARTMENTS WELCOME!</div>
+  <div class="abs addr">📍 Form link<span class="blank"></span> Order until<span class="blank" style="width:130px"></span></div>
+</body>
+</html>
