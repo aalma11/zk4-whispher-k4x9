@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lunch Order Announcement Poster (Fun Style)</title>
+<style>
+  @page { size: 1000px 1437px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 1000px; height: 1437px; position: relative; overflow: hidden; font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif; font-weight: 800;
+    background: linear-gradient(180deg, #5cc8f5 0%, #9fe0fb 38%, #d6f3ff 55%, #a8e063 56%, #6cc24a 100%); }
+  .abs { position: absolute; }
+
+  /* sun rays */
+  .rays { position: absolute; right: -250px; top: -250px; width: 700px; height: 700px; border-radius: 50%;
+    background: repeating-conic-gradient(rgba(255,255,255,.35) 0 10deg, transparent 10deg 20deg); }
+  .sun { right: 40px; top: 120px; font-size: 120px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.2)); }
+  .cloud { font-size: 90px; opacity: .95; }
+
+  /* title */
+  .welcome { left: 100px; top: 150px; width: 800px; text-align: center; }
+  .welcome span { display: inline-block; background: #e91e8c; color: #fff; font-size: 27px; letter-spacing: .04em; padding: 6px 40px; transform: skewX(-6deg);
+    border: 4px solid #fff; box-shadow: 0 5px 0 #a3125f; }
+  .small { top: 90px; left: 0; width: 100%; text-align: center; font-size: 46px; color: #1e3a8a; letter-spacing: .06em; text-shadow: 0 3px 0 #fff, 0 0 12px #fff; }
+  .big { left: 0; width: 100%; text-align: center; line-height: .86; font-size: 170px; font-weight: 900; letter-spacing: .01em;
+    -webkit-text-stroke: 14px #fff; paint-order: stroke fill; text-shadow: 0 10px 0 rgba(0,0,0,.18); }
+  .big i { font-style: normal; display: inline-block; }
+  .c1{color:#ef4444}.c2{color:#f59e0b}.c3{color:#22c55e}.c4{color:#3b82f6}.c5{color:#a855f7}.c6{color:#ec4899}
+  .big.l1 { top: 200px; } .big.l2 { top: 340px; }
+
+  /* navy ribbon */
+  .ribbon { left: 70px; top: 535px; width: 860px; height: 150px; background: #1e3a8a; border-radius: 6px; box-shadow: 0 8px 0 rgba(0,0,0,.2);
+    clip-path: polygon(0 12%, 4% 12%, 4% 0, 96% 0, 96% 12%, 100% 12%, 100% 88%, 96% 88%, 96% 100%, 4% 100%, 4% 88%, 0 88%); }
+  .ribbon-text { left: 70px; top: 535px; width: 860px; height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; text-align: center; }
+  .ribbon-text .a { font-size: 42px; } .ribbon-text .b { font-size: 36px; color: #fde047; margin-top: 4px; }
+  .ico { font-size: 80px; filter: drop-shadow(0 4px 4px rgba(0,0,0,.25)); }
+
+  /* yellow banner */
+  .free { left: 195px; top: 710px; width: 610px; text-align: center; background: #fde047; color: #e11d48; font-size: 40px; white-space: nowrap; padding: 6px 0 8px; border: 5px solid #f59e0b;
+    transform: skewX(-4deg); box-shadow: 0 6px 0 rgba(0,0,0,.18); letter-spacing: .03em; }
+
+  /* paper card */
+  .card { left: 205px; top: 805px; width: 610px; height: 400px; background: #fffdf5; border-radius: 10px; box-shadow: 0 8px 0 rgba(0,0,0,.15); padding: 18px 20px; transform: rotate(-.6deg); }
+  .row { display: flex; align-items: center; gap: 18px; height: 74px; border-bottom: 3px dotted #cbd5e1; font-size: 25px; line-height: 1.1; }
+  .row:last-child { border-bottom: none; }
+  .row .e { font-size: 46px; width: 62px; text-align: center; }
+  .r1{color:#e11d48}.r2{color:#16a34a}.r3{color:#db2777}.r4{color:#2563eb}.r5{color:#7c3aed}
+
+  /* signpost */
+  .post { left: 62px; top: 905px; width: 24px; height: 330px; background: #8b5a2b; border-radius: 6px; }
+  .sign { left: 30px; width: 170px; padding: 8px 12px; color: #fff; font-size: 27px; text-align: left; box-shadow: 0 5px 0 rgba(0,0,0,.2);
+    clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%); }
+  .s1{top:800px;background:#ec4899;transform:rotate(-6deg)} .s2{top:858px;background:#f97316;transform:rotate(4deg)}
+  .s3{top:916px;background:#0ea5e9;transform:rotate(-5deg)} .s4{top:974px;background:#8b5cf6;transform:rotate(3deg)}
+
+  /* stall + board */
+  .stall { right: 0; top: 780px; width: 175px; }
+  .awning { height: 70px; background: repeating-linear-gradient(90deg, #ef4444 0 28px, #fff 28px 56px); border-radius: 60px 0 0 8px; box-shadow: 0 6px 0 rgba(0,0,0,.2); }
+  .counter { height: 150px; background: #a16207; margin-top: 6px; border-radius: 6px 0 0 0; text-align: center; padding-top: 30px; font-size: 56px; }
+  .board { right: 18px; top: 1000px; width: 150px; transform: rotate(5deg); background: #1f2937; border: 8px solid #b7791f; border-radius: 6px; color: #fff; text-align: center; padding: 14px 6px; font-size: 25px; line-height: 1.15; box-shadow: 0 6px 0 rgba(0,0,0,.25); }
+
+  /* bottom banners */
+  .purple { left: 170px; top: 1215px; width: 660px; text-align: center; background: #7c3aed; color: #fde047; font-size: 44px; padding: 4px 0 6px; transform: skewX(-4deg); border: 4px solid #fff; box-shadow: 0 6px 0 rgba(0,0,0,.2); }
+  .pink { left: 190px; top: 1285px; width: 620px; text-align: center; background: #fde047; color: #1e3a8a; font-size: 36px; padding: 4px 0 6px; transform: skewX(-4deg); border: 4px solid #1e3a8a; box-shadow: 0 6px 0 rgba(0,0,0,.2); }
+  .addr { left: 120px; top: 1352px; width: 760px; height: 62px; background: #fffbe6; border: 4px solid #84cc16; border-radius: 16px; display: flex; align-items: center; gap: 14px; padding: 0 22px; color: #1e3a8a; font-size: 24px; box-shadow: 0 5px 0 rgba(0,0,0,.18); }
+  .addr .blank { display: inline-block; width: 190px; border-bottom: 3px dashed #94a3b8; margin: 0 6px; height: 20px; }
+
+  .deco { font-size: 54px; }
+</style>
+</head>
+<body>
+  <div class="rays"></div>
+  <div class="abs sun">🌞</div>
+  <div class="abs cloud" style="left:40px;top:50px">☁️</div>
+  <div class="abs cloud" style="left:700px;top:20px;font-size:70px">☁️</div>
+
+  <!-- bunting -->
+  <svg class="abs" style="left:0;top:0" width="1000" height="140" viewBox="0 0 1000 140">
+    <path d="M-10 20 Q500 110 1010 20" fill="none" stroke="#7c5a2b" stroke-width="4"/>
+    <g id="flags"></g>
+  </svg>
+  <script>
+    const cols=['#ef4444','#f59e0b','#22c55e','#3b82f6','#a855f7','#ec4899'];
+    const g=document.getElementById('flags');
+    for(let i=0;i<17;i++){
+      const t=(i+.5)/17, x=-10+t*1020, y=20+ (2*t*(1-t))*90*2*.5*1.0 ;
+      // quadratic bezier y at t with control y=110: y=(1-t)^2*20+2t(1-t)*110+t^2*20
+      const yy=(1-t)*(1-t)*20+2*t*(1-t)*110+t*t*20;
+      const xx=(1-t)*(1-t)*-10+2*t*(1-t)*500+t*t*1010;
+      g.insertAdjacentHTML('beforeend',`<polygon points="${xx-24},${yy} ${xx+24},${yy} ${xx},${yy+52}" fill="${cols[i%6]}" stroke="#fff" stroke-width="3"/>`);
+    }
+  </script>
+
+  <!-- balloons -->
+  <svg class="abs" style="left:10px;top:150px" width="150" height="330" viewBox="0 0 150 330">
+    <path d="M45 120 Q60 220 70 320 M95 105 Q85 210 70 320" stroke="#64748b" stroke-width="3" fill="none"/>
+    <ellipse cx="42" cy="75" rx="38" ry="48" fill="#ec4899"/><ellipse cx="30" cy="58" rx="9" ry="14" fill="#fff" opacity=".5"/>
+    <ellipse cx="100" cy="62" rx="36" ry="46" fill="#84cc16"/><ellipse cx="88" cy="45" rx="9" ry="14" fill="#fff" opacity=".5"/>
+  </svg>
+  <svg class="abs" style="left:820px;top:260px" width="170" height="330" viewBox="0 0 170 330">
+    <path d="M60 110 Q80 210 90 320 M120 100 Q110 210 90 320" stroke="#64748b" stroke-width="3" fill="none"/>
+    <ellipse cx="55" cy="65" rx="36" ry="46" fill="#3b82f6"/><ellipse cx="44" cy="48" rx="9" ry="14" fill="#fff" opacity=".5"/>
+    <ellipse cx="118" cy="58" rx="32" ry="42" fill="#f97316"/><ellipse cx="108" cy="42" rx="8" ry="12" fill="#fff" opacity=".5"/>
+  </svg>
+
+    <div class="abs welcome" style="top:125px"><span>ANNOUNCING OUR NEW OFFICE LUNCH</span></div>
+  <div class="abs big l1"><i class="c1">O</i><i class="c2">R</i><i class="c3">D</i><i class="c4">E</i><i class="c5">R</i></div>
+  <div class="abs big l2"><i class="c6">O</i><i class="c1">N</i><i class="c2">L</i><i class="c3">I</i><i class="c4">N</i><i class="c5">E</i></div>
+
+  <div class="abs ribbon"></div>
+  <div class="abs ribbon-text"><div class="a">Order from your desk on Lark</div><div class="b">Form open for about 1 to 2 hours</div></div>
+  <div class="abs ico" style="left:98px;top:555px">📅</div>
+  <div class="abs ico" style="left:812px;top:555px">⏰</div>
+
+  <div class="abs free">NO MORE DOOR-TO-DOOR!</div>
+
+  <!-- tree -->
+  <div class="abs" style="left:-30px;top:1040px;font-size:170px">🌳</div>
+  <div class="abs post"></div>
+  <div class="abs sign s1">ORDER</div>
+  <div class="abs sign s2">PICK</div>
+  <div class="abs sign s3">SUBMIT</div>
+  <div class="abs sign s4">ENJOY!</div>
+
+  <div class="abs card">
+    <div class="row r1"><span class="e">📋</span>Tatay shares today's menu with HR</div>
+    <div class="row r2"><span class="e">✅</span>HR picks today's foods in Lark</div>
+    <div class="row r3"><span class="e">📱</span>You enter quantities, extras go in Remarks</div>
+    <div class="row r4"><span class="e">🖨️</span>HR generates and prints the totals</div>
+    <div class="row r5"><span class="e">🛵</span>Tatay delivers, matched to your name</div>
+  </div>
+
+  <div class="abs stall"><div class="awning"></div><div class="counter">🍛🍱</div></div>
+  <div class="abs board">COME ALONG<br>AND ORDER<br>EARLY!<br>🍴</div>
+  <div class="abs deco" style="left:880px;top:1160px">🌼</div>
+  <div class="abs deco" style="left:20px;top:1230px;font-size:46px">🌷🌼</div>
+
+  <div class="abs purple">EASY FOR EVERYONE!</div>
+  <div class="abs pink">ALL DEPARTMENTS WELCOME!</div>
+  <div class="abs addr">📍 Form link<span class="blank"></span> Order until<span class="blank" style="width:120px"></span></div>
+</body>
+</html>
